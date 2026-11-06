@@ -1,0 +1,28 @@
+# ---------- 运行时数据：含登录会话（Cookies / Login Data），绝对不要提交 ----------
+data/
+data/**
+哦鲸鲸翻译Data/
+**/哦鲸鲸翻译Data/
+
+# ---------- 构建产物 ----------
+out/
+dist-发行文件/
+bin/
+obj/
+*.exe
+*.zip
+*.pdb
+*.dll.config
+
+# ---------- 日志与本地诊断 ----------
+*.log
+diag-sandbox.txt
+
+# ---------- 已废弃：启动器被 Defender 机器学习误报为木马，不再编译、不再发行 ----------
+launcher/
+
+# ---------- 系统与临时 ----------
+Thumbs.db
+desktop.ini
+*.tmp
+~$*
