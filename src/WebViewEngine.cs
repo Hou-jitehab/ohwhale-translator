@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Text;
 using System.Threading;
@@ -21,6 +21,8 @@ namespace WT
         public bool StopVisible;
         public int MarkdownCount;
         public string Text;
+        /// <summary>当前页面上所有回答的文字（最多 8 条，给“回答开始”判据用）。</summary>
+        public string[] Texts;
     }
 
     /// <summary>启动自检结果：页面结构是否还能被识别。</summary>
@@ -263,6 +265,24 @@ namespace WT
                     if (dict.ContainsKey("stop")) st.StopVisible = Convert.ToBoolean(dict["stop"]);
                     if (dict.ContainsKey("count")) st.MarkdownCount = Convert.ToInt32(dict["count"]);
                     if (dict.ContainsKey("text")) st.Text = Convert.ToString(dict["text"]);
+                    if (dict.ContainsKey("texts"))
+                    {
+                        // 注意：JavaScriptSerializer 把 JSON 数组反序列化成 ArrayList，
+                        // 不是 object[]（实测 2026-11-08，`as object[]` 永远得到 null）。
+                        // 所以这里按 ICollection 取，两种类型都能吃。
+                        var col = dict["texts"] as System.Collections.ICollection;
+                        if (col != null)
+                        {
+                            var list = new string[col.Count];
+                            int idx = 0;
+                            foreach (object o in col)
+                            {
+                                list[idx] = o == null ? "" : Convert.ToString(o);
+                                idx++;
+                            }
+                            st.Texts = list;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -376,8 +396,26 @@ namespace WT
             }
 
             int baselineCount = before.MarkdownCount;
+            Log.Info("[diag] baseline count=" + baselineCount + " textlen=" + (before.Text == null ? 0 : before.Text.Length));
 
-            // 阶段一：等待出现新的回答节点
+            // DeepSeek 的对话区是虚拟滚动的：新回答进来时，最上面那条会被卸载，
+            // 于是“节点总数”可能一直不变（2026-11-08 实测：发送前后都是 3 个）。
+            // 所以主判据改成“最后一条回答的文字变了没有”，数量变化只作辅助。
+            string baselineText = before.Text == null ? "" : before.Text;
+            var baselineSet = new System.Collections.Generic.HashSet<string>();
+            if (before.Texts != null)
+            {
+                for (int i = 0; i < before.Texts.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(before.Texts[i])) baselineSet.Add(before.Texts[i]);
+                }
+            }
+            // 兜底：就算 Texts 没拿到（老版本页面/解析失败），也要把「最后一条回答」
+            // 塞进基线，否则 fresh 会恒为真，把上一轮的译文当成这一轮的结果。
+            if (!string.IsNullOrEmpty(baselineText)) baselineSet.Add(baselineText);
+            Log.Info("[diag] baseline known=" + baselineSet.Count);
+
+            // 阶段一：等待回答开始
             var sw = System.Diagnostics.Stopwatch.StartNew();
             bool started = false;
             PageStatus st = null;
@@ -386,8 +424,14 @@ namespace WT
                 await Task.Delay(300, ct);
                 ct.ThrowIfCancellationRequested();
                 st = await GetStatusAsync();
-                if (st.MarkdownCount > baselineCount)
+                string cur = st.Text == null ? "" : st.Text;
+                bool grew = st.MarkdownCount > baselineCount;
+                bool fresh = cur.Length > 0 && !baselineSet.Contains(cur);
+                if (grew || fresh || st.StopVisible)
                 {
+                    Log.Info("[diag] started grew=" + grew + " fresh=" + fresh
+                        + " stop=" + st.StopVisible + " count=" + st.MarkdownCount
+                        + " textlen=" + cur.Length + " 耗时=" + sw.ElapsedMilliseconds + "ms");
                     started = true;
                     break;
                 }
@@ -395,6 +439,13 @@ namespace WT
 
             if (!started)
             {
+                string diag = "";
+                try { diag = await ExecJsAsync(PageSelectors.DiagJs); }
+                catch (Exception ex) { Log.Exception("页面诊断失败", ex); }
+                Log.Info("[diag] timeout count=" + (st == null ? -1 : st.MarkdownCount)
+                    + " stop=" + (st == null ? false : st.StopVisible)
+                    + " textlen=" + (st == null || st.Text == null ? 0 : st.Text.Length));
+                Log.Info("[diag] dump " + diag);
                 throw new EngineException("网页版没有开始响应（可能被限流或网络异常）。");
             }
 

@@ -10,15 +10,29 @@
 
 ## 下载
 
-### 👉 [**点这里下载 哦鲸鲸翻译 v0.1（Windows 版）**](https://github.com/Hou-jitehab/ohwhale-translator/releases/latest)
+### 👉 [**点这里下载 哦鲸鲸翻译 v0.2（Windows 版）**](https://github.com/Hou-jitehab/ohwhale-translator/releases/latest)
 
-下载 `ohwhale-translator-v0.1.zip`（约 376 KB），解压后双击 `哦鲸鲸翻译-v0.1.exe` 即可使用，**不需要安装、不需要 API Key**。
+下载 `ohwhale-translator-v0.2.zip`（约 378 KB），解压后双击 `哦鲸鲸翻译-v0.2.exe` 即可使用，**不需要安装、不需要 API Key**。
 
 > **⚠️ 别点「Source code (zip)」**
 >
 > 发布页底部的 *Source code (zip)* / *Source code (tar.gz)*，以及仓库首页绿色的 **Code → Download ZIP**，
 > 下载到的都是**源代码，里面没有 exe**。源码需要用 `build.cmd` 自己编译（见下方「编译」），
 > 普通用户直接下上面的软件包就行。
+
+## 更新日志
+
+### v0.2 — 推荐所有人更新（2026-11-08）
+
+修掉了两个让译文「串台」的问题：
+
+- **浮窗卡在「翻译中」，等到超时报错**：判断「回答开始没有」的办法和 DeepSeek 网页的**虚拟滚动**打架了——新回答一进来，最上面那条会被卸载，节点总数不变，程序就以为还没开始。现在改成比较「最后一条回答的文字变没变」。
+- **偶尔显示的是上一条的译文**：上面那个判断里有个类型解析漏洞，让「文字变了没有」变成永远返回「变了」，极端情况下会把你**上一次**的译文当成本次的结果。已修，并加了兜底。
+
+两个问题都是「有时候能出、有时候不出」，所以 v0.1 并不是完全不能用，而是**不可预测**。v0.2 之后可以放心用了。
+
+**升级方法**：下载新包 → 解压 → 用 `哦鲸鲸翻译-v0.2.exe` 替换旧的 v0.1（旧的可以直接删）。
+登录态和设置存在 `哦鲸鲸翻译Data\` 目录里，**不要删那个目录**，换 exe 不需要重新登录。
 
 ## 特性
 
@@ -54,7 +68,7 @@ icacls out\WordTranslator.exe /setintegritylevel Medium
 
 ## 使用
 
-1. 双击 `WordTranslator.exe` → 弹出 DeepSeek 窗口，登录账号（只需一次）
+1. 双击 `哦鲸鲸翻译-v0.2.exe`（自己编译出来的叫 `WordTranslator.exe`，是同一个程序）→ 弹出 DeepSeek 窗口，登录账号（只需一次）
 2. 登录后窗口收起，托盘出现小鲸鱼图标，状态变「就绪」
 3. 任意程序里：按住 `Alt` → 划选英文 → 松手
 4. 译文出现在鼠标旁；点一下浮层可固定，`Esc` 关闭

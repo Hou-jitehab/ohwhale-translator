@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -15,7 +15,7 @@ namespace WT
         // 引擎
         public int MaxRoundsBeforeReset = 20;
         public int MinIntervalMs = 250;
-        public int FirstTokenTimeoutSec = 15;
+        public int FirstTokenTimeoutSec = 10;
         public int TranslateTimeoutSec = 60;
         public bool ShowEngineWindow = false;
         public string PromptPrefix = "帮我直接翻译，直接给出中文译文，不要解释、不要重复原文：";

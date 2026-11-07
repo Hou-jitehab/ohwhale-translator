@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace WT
 {
@@ -41,14 +41,48 @@ namespace WT
   var ce = document.querySelector('div[contenteditable=""true""]');
   var input = ta || ce;
   var nodes = document.querySelectorAll('" + AssistantNode + @"');
-  var last = nodes.length ? (nodes[nodes.length - 1].innerText || '') : '';
+  // 对话区是虚拟滚动的：新回答出现时旧节点会被卸载，节点总数可能不变。
+  // 所以除了数量，还要把每条回答的文字带回去，让上层按“文字变了没有”判断。
+  var texts = [];
+  for (var k = 0; k < nodes.length; k++) texts.push(nodes[k].innerText || '');
+  var last = texts.length ? texts[texts.length - 1] : '';
   var stop = false;
   var btns = document.querySelectorAll('[role=""button""],button');
   for (var i = 0; i < btns.length; i++) {
     var t = (btns[i].getAttribute('aria-label') || '') + ' ' + (btns[i].innerText || '');
     if (/停止|Stop generating/i.test(t)) { stop = true; break; }
   }
-  return { input: !!input, stop: stop, count: nodes.length, text: last };
+  return { input: !!input, stop: stop, count: nodes.length, text: last, texts: texts.slice(-8) };
+})()";
+
+        /// <summary>
+        /// 诊断用：超时时把页面里和“回答”有关的结构抓出来写进日志。
+        /// 纯只读，不改页面。
+        /// </summary>
+        public static readonly string DiagJs =
+@"(function(){
+  var out = [];
+  out.push('URL=' + location.href);
+  var sel = '" + AssistantNode + @"';
+  var nodes = document.querySelectorAll(sel);
+  out.push('SEL=' + sel + ' count=' + nodes.length);
+  if (nodes.length) {
+    var e = nodes[nodes.length - 1];
+    var t = e.innerText || '';
+    out.push('SEL last textlen=' + t.length);
+    out.push('SEL last cls=' + (e.className || ''));
+    out.push('SEL last html=' + String(e.outerHTML || '').replace(/\s+/g, ' ').substring(0, 300));
+  }
+  var cands = document.querySelectorAll('[class*=""assistant""],[class*=""message""],[class*=""markdown""]');
+  out.push('CAND count=' + cands.length);
+  for (var i = 0; i < cands.length && i < 12; i++) {
+    var a = cands[i];
+    out.push('CAND' + i + ' <' + a.tagName + '> cls=' + String(a.className).substring(0, 90) + ' len=' + ((a.innerText || '').length));
+  }
+  var body = document.body ? (document.body.innerText || '') : '';
+  out.push('BODY len=' + body.length);
+  out.push('BODY tail=' + String(body).substring(Math.max(0, body.length - 240)).replace(/\s+/g, ' '));
+  return out.join(' || ');
 })()";
 
         /// <summary>启动自检：确认还能找到输入框、发送按钮、开关。</summary>

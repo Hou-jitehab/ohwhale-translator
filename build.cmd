@@ -15,6 +15,7 @@ if not exist "%OUT%" mkdir "%OUT%"
 
 echo Building WordTranslator...
 "%CSC%" /nologo /target:winexe /optimize+ /platform:anycpu /out:"%OUT%\WordTranslator.exe" ^
+ /win32icon:"%LIB%\app.ico" ^
  /reference:System.dll ^
  /reference:System.Core.dll ^
  /reference:System.Drawing.dll ^
@@ -28,7 +29,7 @@ echo Building WordTranslator...
  /resource:"%LIB%\Microsoft.Web.WebView2.WinForms.dll",Microsoft.Web.WebView2.WinForms.dll ^
  /resource:"%LIB%\WebView2Loader.dll",WebView2Loader.dll ^
  "%~dp0src\Native.cs" "%~dp0src\Log.cs" "%~dp0src\Settings.cs" ^
- "%~dp0src\SelectionCapture.cs" "%~dp0src\TextGrabber.cs" "%~dp0src\WebViewEngine.cs" ^
+ "%~dp0src\SelectionCapture.cs" "%~dp0src\TextGrabber.cs" "%~dp0src\PageSelectors.cs" "%~dp0src\WebViewEngine.cs" ^
  "%~dp0src\OverlayForm.cs" "%~dp0src\SettingsForm.cs" "%~dp0src\Program.cs"
 
 if errorlevel 1 (
