@@ -8,6 +8,18 @@
 
 > 图标形象来自 DSH 的「余额小挂件」插件。
 
+## 下载
+
+### 👉 [**点这里下载 哦鲸鲸翻译 v0.1（Windows 版）**](https://github.com/Hou-jitehab/ohwhale-translator/releases/latest)
+
+下载 `ohwhale-translator-v0.1.zip`（约 376 KB），解压后双击 `哦鲸鲸翻译-v0.1.exe` 即可使用，**不需要安装、不需要 API Key**。
+
+> **⚠️ 别点「Source code (zip)」**
+>
+> 发布页底部的 *Source code (zip)* / *Source code (tar.gz)*，以及仓库首页绿色的 **Code → Download ZIP**，
+> 下载到的都是**源代码，里面没有 exe**。源码需要用 `build.cmd` 自己编译（见下方「编译」），
+> 普通用户直接下上面的软件包就行。
+
 ## 特性
 
 - **全局划词**：任意程序里都能用，不限于浏览器
